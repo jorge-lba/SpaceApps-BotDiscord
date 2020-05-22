@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config()
 
-import {Team} from './templates/team'
+import {Team} from '../templates/team'
 class Participant {
     constructor(
         private name:string,
