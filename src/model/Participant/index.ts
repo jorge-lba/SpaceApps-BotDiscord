@@ -1,30 +1,31 @@
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
+import Team from './templates/team'
 class Participant {
-    // private url_database = process.e
-
     constructor(
-        protected _name:string,
-        protected _email:string,
-        public discordName?:string,
-        public discordUserId?:number,
-        public cellPhone?:string,
-        public team?:string
-        
-    ){
-        
-    }
+        public name:string,
+        public email:string,
+        public teamName?:string,
+        public teamId?:string
+    ){ }
 
-    get name():string{ return this._name }
-    get email():string{ return this._email }
-
-    public crateTeam(name:string):object{
-
-        return{
-            name
-        }
-    }
+    private team = new Team(this.email, this.teamId, this.teamName)
+    
+    public createTeam = async (name:string):Promise<object> => await this.team.create(name)
+    public addMemberMyTeam = async (email:string, name?:string):Promise<object>  => await this.team.addMember(email, name)
+    public removeMemberMyTeam = async (email:string, name?:string):Promise<object>  => await this.team.removeMember(email, name)
     
 }
 
-const user = new Participant('jorge','test@test.com')
+const jorge = new Participant('jorge', 'j@j.com')
 
-console.log(user.name, user.email, user.team)
+async function run(){
+    await jorge.createTeam('SpaceApps2')
+    const memberAdd = await jorge.addMemberMyTeam('jorge@test.com')
+//    const memberRM = await jorge.removeMemberMyTeam('jorge@test.com')
+    console.log(memberAdd)
+//    console.log(memberRM)
+}
+run()
