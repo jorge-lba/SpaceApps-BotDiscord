@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 
 dotenv.config()
 
-class Team {
+export class Team {
     private url_server:string = String(process.env.URL_SERVER_DATABASE)
     private path:string = '/teams'
 
@@ -104,7 +104,7 @@ class Team {
 
     }
 
-    public async addMentoring(name:string, mentoringId:string):Promise<object>{
+    public async addMentoring(mentoringId:string, name:string):Promise<object>{
         const {message, teamList} = await this.list()
         const [team] = teamList.filter((item:any) => item.name === name)
 
@@ -126,7 +126,6 @@ class Team {
 
 }
 
-export default Team
 
 // const team = new Team('jorge@teste.com', '5ec5c950be80b23f639df6b4')
 
