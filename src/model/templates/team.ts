@@ -34,6 +34,7 @@ export class Team {
     }
 
     public async selectOne(teamId = this.teamId):Promise<object>{
+        console.log(teamId)
         const response = await fetch(this.url_server+this.path+'/'+teamId)
         const {message, team} = await response.json()
         return{

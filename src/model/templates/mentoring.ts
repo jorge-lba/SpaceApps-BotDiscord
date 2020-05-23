@@ -13,13 +13,13 @@ export type Mentor = {
     _id:string
 }
 
-export type MarkMentoring = {
+export type TypeMarkMentoring = {
     mentorEmail?:string 
     teamId?:string 
     area:string 
     date:Date
-    mentor?:string
-    team?:string
+    mentor:string
+    team:string
 }
 
 export type TypeMentoring = {
@@ -83,7 +83,7 @@ export class Mentoring{
         return response
     }
 
-    public async mark(item:MarkMentoring){
+    public async mark(item:TypeMarkMentoring){
         const method:object = {
             method:'POST',
             body: JSON.stringify(item),
@@ -93,25 +93,25 @@ export class Mentoring{
         const response = await fetch(this.url_server +'/mentorings', method)
         const marked = await response.json()
 
-        console.log(marked)
+        return marked
 
     }
 
 }
 
-const mentoring = new Mentoring()
+// const mentoring = new Mentoring()
 
-async function run(){
-   const list =  await mentoring.listAll()
-   const listForArea:any = await mentoring.listForArea('UX')
-   const listForMentor:any = await mentoring.listForMentor('Jorge')
-   const marked = await mentoring.mark({
-        mentor:'jorge@testUpdate.com', 
-        team:'5ec724d4ab3cff35a4b6513c', 
-        area:'Buss', 
-        date: new Date('2020-05-30')
-   })
-   console.log(marked)
-}
+// async function run(){
+//    const list =  await mentoring.listAll()
+//    const listForArea:any = await mentoring.listForArea('UX')
+//    const listForMentor:any = await mentoring.listForMentor('Jorge')
+//    const marked = await mentoring.mark({
+//         mentor:'jorge@testUpdate.com', 
+//         team:'5ec724d4ab3cff35a4b6513c', 
+//         area:'Buss', 
+//         date: new Date('2020-05-30')
+//    })
+//    console.log(marked)
+// }
 
-run()
+// run()
