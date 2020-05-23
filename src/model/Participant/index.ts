@@ -34,6 +34,10 @@ class Participant {
         await this.addMentoringTeam(marked.mentoring._id)
         return marked
     }
+    public listMentoringMyTeam = async () => {
+        const response:any  = await this.viewMyTeam()
+        return response.scheduledMentoring
+    }
     
 }
 
@@ -67,6 +71,9 @@ async function run(){
 
     // const myTeam = await jorge.viewMyTeam()
     // console.log(myTeam)
+
+    const myMentoring = await jorge.listMentoringMyTeam()
+    console.log(myMentoring)
         
 }
 run()
