@@ -15,7 +15,7 @@ export class Team {
         
     }
 
-    public async list():Promise<{message:string, teamList:{name:string, members:string[], scheduledMentoring:string[], _id:string}[]}>{
+    public async list():Promise<{message:string, teamList:{name:string, members:string[], scheduledMentoring:{}[], _id:string}[]}>{
         const response = await fetch(this.url_server+this.path)
         const {message, teamList} = await response.json()
         return{
@@ -24,7 +24,7 @@ export class Team {
         }
     }
     
-    public async setTeam(name:string):Promise<void>{
+    public async setTeam(name?:string):Promise<void>{
         
         const {message, teamList} = await this.list()
         const [team] = teamList.filter((item:any) => item.name === name)
@@ -34,16 +34,16 @@ export class Team {
     }
 
     public async selectOne(teamId = this.teamId):Promise<object>{
-
-        const response = await fetch(this.url_server+this.path+'/'+teamId)
+        await this.setTeam(this.teamName)
+        const response = await fetch(this.url_server+this.path+'/'+(this.teamId || teamId) )
         const {message, team} = await response.json()
         return{
             message,
-            ...team
+            team
         }
     }
 
-    public async create(name:string):Promise<object>{
+    public async create(name:string):Promise<{message:string, team:any, error?:any}>{
         const method:object = {
             method:'POST',
             body: JSON.stringify({
@@ -60,7 +60,8 @@ export class Team {
 
         return{
             message,
-            team
+            team,
+            error
         }
     }
 
@@ -105,11 +106,12 @@ export class Team {
 
     }
 
-    public async addMentoring(mentoringId:string, name:string):Promise<object>{
+    public async addMentoring(mentoring:string, teamName:string):Promise<object>{
         const {message, teamList} = await this.list()
-        const [team] = teamList.filter((item:any) => item.name === name)
+        const [team] = teamList.filter((item:any) => item.name === teamName)
+        console.log(team)
 
-        team.scheduledMentoring.push(mentoringId)
+        team.scheduledMentoring.push(mentoring)
 
         const method:object = {
             method:'PUT',
