@@ -1,5 +1,8 @@
-const Discord = require( 'discord.js' )
-const Certified = require( './certifiedGenerator' )
+import * as Discord from 'discord.js'
+import {certifiedGenerator} from './certifiedGenerator'
+
+// const Discord = require( 'discord.js' )
+// const Certified = require( './certifiedGenerator' )
 require( 'dotenv/config' )
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
@@ -24,7 +27,7 @@ bot.on( 'message', async (msg:any) => {
     if( msg.channel.type === 'dm' ){
         
         if( message === 'certificado' ||message === 'Certificado' ){
-            await Certified( user.username )
+            await certifiedGenerator( user.username )
             msg.author.send('test', { files: ['./assets/certified/' + user.username + '.png'] })
             console.log( message )
         }
