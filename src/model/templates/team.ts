@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv'
+import {parseISO, format} from 'date-fns'
 const fetch = require('node-fetch')
 
 dotenv.config()
@@ -37,10 +38,26 @@ export class Team {
         await this.setTeam(this.teamName)
         const response = await fetch(this.url_server+this.path+'/'+(this.teamId || teamId) )
         const {message, team} = await response.json()
-        return{
+        const mentorings= []
+
+        for(const id of team.scheduledMentoring){
+            const result = await fetch(this.url_server+'/mentorings'+'/'+ id )
+            const {message, mentoring} = await result.json()
+
+            delete mentoring._id
+            delete mentoring.createdAt
+            delete mentoring.updatedAt
+            delete mentoring.team
+            delete mentoring.__v
+
+            mentoring.date = format(parseISO(mentoring.date), "dd/MM/yyyy 'ás' HH:mm")
+            mentorings.push(mentoring)
+        }
+        team.scheduledMentoring = mentorings
+        return({
             message,
             team
-        }
+        })
     }
 
     public async create(name:string):Promise<{message:string, team:any, error?:any}>{
@@ -65,10 +82,14 @@ export class Team {
         }
     }
 
-    public async addMember(email:string = this._userEmail, name?:string):Promise<object>{        
+    public async addMember(email:string = this._userEmail, name?:string ):Promise<object>{        
         const {message, teamList} = await this.list()
-        const [team] = teamList.filter((item:any) => item.name === this.teamName|| name )
+        const [team] = teamList.filter((item:any) => item.name === name  )
         
+        const testMember = team.members.filter((item:any) => item === email)
+
+        if(testMember) return {error: 'Usuário já cadastrado no time.'}
+
         team.members.push(email)
         const method:object = {
             method:'PUT',
@@ -87,7 +108,7 @@ export class Team {
     public async removeMember(email:string = this._userEmail, name?:string):Promise<object>{
 
         const {message, teamList} = await this.list()
-        const [team] = teamList.filter((item:any) => item.name === this.teamName || name)
+        const [team] = teamList.filter((item:any) => item.name === name)
 
         team.members = team.members.filter(item => item !== email)
 
@@ -106,12 +127,13 @@ export class Team {
 
     }
 
-    public async addMentoring(mentoring:string, teamName:string):Promise<object>{
+    public async addMentoring(mentoring:any, teamName:string):Promise<object>{
         const {message, teamList} = await this.list()
         const [team] = teamList.filter((item:any) => item.name === teamName)
         console.log(team)
 
         team.scheduledMentoring.push(mentoring)
+        console.log(team.scheduledMentoring)
 
         const method:object = {
             method:'PUT',

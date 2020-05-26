@@ -22,18 +22,44 @@ export class Participants {
         return userList
     }
 
+    public async updateParticiant(user:any, id:any ){
+        const method:object = {
+            method:'PUT',
+            body: JSON.stringify({
+                cellPhone: user.cellPhone,
+                discordName: user.discordName,
+                discordUserId: user.discordUserId,
+                team: user.team,
+                type: user.type
+            }),
+            headers: {'Content-Type': 'application/json'}
+        }
+
+        let path:string
+        if(user.type === 'participant'){
+            path = this.pathParticipants
+        }else{
+            path = this.pathMentors
+        }
+
+        const response = await fetch(this.url_server+ path +'/' + id, method)
+        const resp = await response.json()
+
+        return resp
+    }
+
     public async validateEmail(email:string){
         const participants:any = await this.listParticipants()
 
-        let testResult:string = participants.find((participant:any) => participant.email === email)
-        if(testResult) return 'participant'
+        let testResult:any = participants.find((participant:any) => participant.email === email)
+        if(testResult) return {...testResult ,type:'participant'}
 
         const mentors:any = await this.listMentors()
 
         testResult = mentors.find( (mentor:any) => mentor.email === email )
-        if(testResult) return 'mentor'
+        if(testResult) return {...testResult ,type:'mentor'}
 
-        return 'unregistered user'
+        return {error:'unregistered user',type:'unregistered user'}
     }
 
     public async validateDiscordUser(id:number){
@@ -47,7 +73,7 @@ export class Participants {
         testResult = mentors.find( (mentor:any) => mentor.discordUserId === id  )
         if(testResult) return {...testResult, type: 'mentor' }
 
-        return {error:'unregistered user'}
+        return {error:'unregistered user', type:'unregistered user'}
     }
 
 }

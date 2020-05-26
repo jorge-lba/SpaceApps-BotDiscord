@@ -37,10 +37,13 @@ export class Bot{
         },
         team:{
             comand: 'time',
-            response: `Time: ##
-            Membros: @@
-            Mentorias Agendadas: !!`,
+            response: `\nTime: ## \nMembros: @@ \nMentorias Agendadas: !!\n`,
             error:'Você não está em nenhum time no momento.'
+        },
+        addTeamMember:{
+            comand:'adicionarmembro',
+            response:'Membro adcionado!',
+            erro:'Não foi possivel adcionar o membro.'
         },
         listmentoring:{
             comand:{
@@ -53,6 +56,10 @@ export class Bot{
         markMentoring:{
             comando:'marcarmentoria',
             response:'Mentoria de @@ com ## dia !! foi marcada com sucesso!'
+        },
+        comands:{
+            comand:'comandos',
+            response: '\n Time \n Criar Time: "Nome do Time" \n Listar Mentorias \n Listar Mentorias - Area: "Area" \n Listar mentoria - Mentor: "Nome do mentor" \n Marcar Mentoria: "Nome do Mentor" - "Area" - "--/05/2020" ás --:--'
         }
     }
 
@@ -75,6 +82,7 @@ export class Bot{
             const participant = new Participant(user.name, user.email, teamName)
             const {message, team, error} = await participant.createTeam(teamName)
             if(error) return message
+
             const response = this.options.createTeam.response.replace('##', team.name)
 
             return response
@@ -85,16 +93,46 @@ export class Bot{
         if(user.team){
             const participant = new Participant(user.name, user.email, user.team)
             const resp:any = await participant.viewMyTeam()
+            let mentorings:string
+
+            if(resp.team.scheduledMentoring){
+                mentorings = resp.team.scheduledMentoring.map((mentoring:any) =>
+                    `\n     ${mentoring.mentor} - ${mentoring.area} - ${mentoring.date} - ${mentoring.state}`
+                )
+            }else{
+                mentorings = '---'
+            }
 
             const response = this.options.team.response
                 .replace('##', resp.team.name)
                 .replace('@@', resp.team.members)
-                .replace('!!', ( resp.team.scheduledMentoring[0] ? resp.team.scheduledMentoring : '---'))
+                .replace('!!', ( mentorings))
 
             return response
         }else{
             return this.options.team.error
         }
+    }
+
+    private async addTeamMember(user:any, email:string){
+        if(!this.isEmail(email)) return 'E-mail invalido: ' + email
+
+        let response:string = ''
+
+        if(user.team){
+            const participant = new Participant(user.name, user.email, user.team)
+            const newMember = await this.participants.validateEmail(email)
+            
+            if(newMember.type === 'participant'){
+                const result:any = await participant.addMemberMyTeam(email, user.team)
+                if(result.error) return result.error
+                response = 'Membro adicionado com sucesso.'
+            }else{
+                response = 'E-mail não cadastrado: ' + email
+            }
+        }
+        return response
+    
     }
     
     public async listMentoringAll(){
@@ -182,23 +220,43 @@ export class Bot{
         const participant = new Participant(user.name, user.email, user.team) 
     
         const res = await participant.markMentoring(mentoringObj)
+        console.log(res)
 
         return response
     }
 
+    private async updateParticipant(user:any,id:any){
+        return this.participants.updateParticiant(user,id)
+    }
+
+
     public async run(){
-        const user = await this.validateUserByDiscordId()
+        const user:any = await this.validateUserByDiscordId()
         let response:string =''
+        
+        if(!user.name){
+            response = 'Digite seu email de cadastro para liberar o acesso.'
+        }
 
         if(user.type === 'participant'){
             const message = this.filterComand(this.message)
 
             switch(message.comand){
+                case this.options.comands.comand:
+                    response = this.options.comands.response
+                break
                 case this.options.createTeam.comand:
                     response = await this.createTeam(user, message.text)
+                    if(response === `Time ${message.text} foi criado.`) 
+                        await this.updateParticipant({team:message.text, type:user.type}, user._id)
+
+                    console.log(response)
                 break
                 case this.options.team.comand:
                     response = await this.myTeam(user)
+                break
+                case this.options.addTeamMember.comand:
+                    response = await this.addTeamMember(user, message.text)
                 break
                 case this.options.listmentoring.comand.all:
                     response = await this.listMentoringAll()
@@ -213,21 +271,30 @@ export class Bot{
                     response = await this.markMentoring(user, message.text)
                 break
                 default:
-                    response = 'Este comandto não é valido.'
+                    response = 'Este comando não é valido.'
                 break
             }
             
         }else if(user.type === 'mentor'){
             return 'mentor'
         }else{
-            if(!this.isEmail()){
+            if(this.isEmail(this.message)){
                 const userIsRegistered:any = await this.participants.validateEmail(this.message)
+
+                console.log(userIsRegistered)
+
                 if(userIsRegistered.error){
-                    return 'Envie seu e-mail de cadastro.'
+                    response =  `Este e-mail "${this.message}" não está cadastrado, envie seu e-mail de cadastro.`
                 }else if(userIsRegistered.type === 'mentor'){
-
+                    response = 'Mentor'
                 }else if(userIsRegistered.type === 'participant'){
-
+                    const result = await this.updateParticipant({
+                        discordName: this.discordName,
+                        discordUserId: this.discordUserId,
+                        type: 'participant'
+                    }, userIsRegistered._id)
+                    console.log(result)
+                    response = 'Participante'
                 }
             }
 
@@ -238,10 +305,8 @@ export class Bot{
 
     public isEmail(email:string = this.message){
         const reg = new RegExp(/^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/)
-        if (!reg.test(email)) {
-            return false
-        }
-        return true
+        
+        return reg.test(email)
     }
 
 

@@ -11,7 +11,8 @@ export class Participant {
         private email:string,
         private teamName:string = '',
         private _teamId:string = ''
-    ){ 
+    ){
+        console.log(teamName) 
     }
 
     private team = new Team(this.email, this._teamId, this.teamName)
@@ -20,9 +21,9 @@ export class Participant {
     get teamId(){return this._teamId}
     
     public createTeam = async (nameTeam:string ):Promise<{message:string, team:any, error?:any}> => await this.team.create(nameTeam)
-    public addMemberMyTeam = async (email:string):Promise<object>  => await this.team.addMember(email, this.teamName)
+    public addMemberMyTeam = async (email:string, team:string):Promise<object>  => await this.team.addMember(email, team ||this.teamName)
     public removeMemberMyTeam = async (email:string):Promise<object>  => await this.team.removeMember(email, this.teamName)
-    public addMentoringTeam = async (mentoringId:string):Promise<object> => await this.team.addMentoring(mentoringId, this.teamName)
+    public addMentoringTeam = async (mentoring:any):Promise<object> => await this.team.addMentoring(mentoring, this.teamName)
     public viewMyTeam = async ():Promise<object> => await this.team.selectOne()
 
     public listAllMentorings = async () => this.mentorings.listAll()
@@ -30,7 +31,6 @@ export class Participant {
     public listMentoringByArea = async (arae:string) => this.mentorings.listForArea(arae)
     public markMentoring = async (item:TypeMarkMentoring) => {
         const marked = await this.mentorings.mark({...item, team:this.teamName})
-        console.log(marked)
         await this.addMentoringTeam(marked.mentoring._id)
         return marked
     }
