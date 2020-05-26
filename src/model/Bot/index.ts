@@ -59,7 +59,7 @@ export class Bot{
         },
         comands:{
             comand:'comandos',
-            response: '\n Time \n Criar Time: "Nome do Time" \n Listar Mentorias \n Listar Mentorias - Area: "Area" \n Listar mentoria - Mentor: "Nome do mentor" \n Marcar Mentoria: "Nome do Mentor" - "Area" - "--/05/2020" ás --:--'
+            response: '\n Time \n Criar Time: "Nome do Time" \n Adicionar Membro: "email" \n Listar Mentorias \n Listar Mentorias - Area: "Area" \n Listar mentoria - Mentor: "Nome do mentor" \n Marcar Mentoria: "Nome do Mentor" - "Area" - "--/05/2020" ás --:--'
         }
     }
 
