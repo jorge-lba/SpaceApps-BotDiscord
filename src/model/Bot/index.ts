@@ -1,6 +1,7 @@
 import { Participants } from "../templates/participants";
 import { Mentoring } from "../templates/mentoring";
 import { Participant } from "../Participant";
+import CertifiedGenerator from '../../certifiedGenerator'
 
 import { format, parseISO, subHours } from 'date-fns'
 import { zonedTimeToUtc } from 'date-fns-tz'
@@ -9,6 +10,36 @@ type dataParticipant = {
     discordUserId:number
     discordName:string
     teamName?:string
+}
+
+const guildRoles = {
+    everyone:{
+        id: '710281096394309654',
+        name: '@everyone'
+    },
+    Admin:{
+        id: '710324427807785001',
+        name: 'Admin'
+    },
+    master_bot:{
+        id: '710326546279432223',
+        name: 'master bot'
+    },
+    participante:{
+        id: '711350098109661214',
+        name: 'participante'
+    },
+    mentor:{
+        id: '711350643742343218',
+        name: 'mentor'
+    },
+}
+
+const guildChannel={
+    acess:{
+        name: 'acesso',
+        id: '715225782527721502'
+    }
 }
 
 export class Bot{
@@ -22,7 +53,8 @@ export class Bot{
 
     constructor(
         private dataUser:dataParticipant,
-        private message:string
+        private message:string,
+        private member?:any
     ){
         this.discordName = dataUser.discordName
         this.discordUserId = dataUser.discordUserId
@@ -60,6 +92,14 @@ export class Bot{
         comands:{
             comand:'comandos',
             response: '\n Time \n Criar Time: "Nome do Time" \n Adicionar Membro: "email" \n Listar Mentorias \n Listar Mentorias - Area: "Area" \n Listar mentoria - Mentor: "Nome do mentor" \n Marcar Mentoria: "Nome do Mentor" - "Area" - "--/05/2020" ás --:--'
+        },
+        certified:{
+            comand:'gerarcertificado-off898896523369',
+            response: 'Certificado SpaceApps'
+        },
+        acess:{
+            comand: 'acesso',
+            response: 'Seu acesso foi liberado.'
         }
     }
 
@@ -200,27 +240,32 @@ export class Bot{
 
         let response:string = ''
         let mentoringObj:any = {}
-        const mentorings:any = await this.mentorings.listForMentor(mentorName)
-
-        mentorings.forEach((mentoring:any) => {
-            if(mentoring.area === area)
-                mentoring.dates.forEach((date:any) => {
+        const mentors = await this.participants.listMentors()
+        const mentorByName = mentors.find((mentor:any) => mentor.name === mentorName)
+        console.log(mentorByName)
+        mentorByName.mentoringSchedule.forEach((mentorings:any, i:any) => {
+            if(mentorings.area === area){
+                mentorings.dates.forEach((date:any,index:any) => {
                     if(new Date(date.date).getTime() === dateNew.getTime() && date.state === 'Open'){
                         mentoringObj = {
-                            mentor: mentoring.mentorName,
-                            area: mentoring.area,
+                            mentor: mentorByName.name,
+                            area: mentorings.area,
                             ...date
                         }
+                        mentorByName.mentoringSchedule[i].dates[index].state = 'marked'
                         response = 'Mentoria marcada com sucesso!'
                     }
                 })
+            }
         })
+
+        await this.participants.updateParticiant({mentoringSchedule:mentorByName.mentoringSchedule}, mentorByName._id)
+
         if(response !== 'Mentoria marcada com sucesso!')return 'Não foi possivel marcar essa mentoria, tente novamente.'
         
         const participant = new Participant(user.name, user.email, user.team) 
     
-        const res = await participant.markMentoring(mentoringObj)
-        console.log(res)
+        await participant.markMentoring(mentoringObj)
 
         return response
     }
@@ -237,7 +282,7 @@ export class Bot{
         if(!user.name){
             response = 'Digite seu email de cadastro para liberar o acesso.'
         }
-
+        
         if(user.type === 'participant'){
             const message = this.filterComand(this.message)
 
@@ -249,8 +294,6 @@ export class Bot{
                     response = await this.createTeam(user, message.text)
                     if(response === `Time ${message.text} foi criado.`) 
                         await this.updateParticipant({team:message.text, type:user.type}, user._id)
-
-                    console.log(response)
                 break
                 case this.options.team.comand:
                     response = await this.myTeam(user)
@@ -270,22 +313,50 @@ export class Bot{
                 case this.options.markMentoring.comando:
                     response = await this.markMentoring(user, message.text)
                 break
+                case this.options.acess.comand:
+                    await this.member.roles.add(guildRoles.participante.id).catch(console.error)
+                break
+                case this.options.certified.comand:
+                    await CertifiedGenerator( user.name )
+                    this.member.reply('test', { files: ['./assets/certified/' + user.name + '.png'] })
+                    console.log( message )
+                    response = this.options.certified.response
+                break
                 default:
                     response = 'Este comando não é valido.'
                 break
             }
             
         }else if(user.type === 'mentor'){
-            return 'mentor'
+            const message = this.filterComand(this.message)
+
+            switch(message.comand){
+                case this.options.acess.comand:
+                    await this.member.roles.add(guildRoles.mentor.id).catch(console.error)
+                break
+                case this.options.certified.comand:
+                    await CertifiedGenerator( user.name )
+                    this.member.reply('test', { files: ['./assets/certified/' + user.name + '.png'] })
+                    console.log( message )
+                    response = this.options.certified.response
+                break
+                default:
+                    response = 'Este comando não é valido.'
+                break
+            }
         }else{
             if(this.isEmail(this.message)){
                 const userIsRegistered:any = await this.participants.validateEmail(this.message)
 
-                console.log(userIsRegistered)
-
                 if(userIsRegistered.error){
                     response =  `Este e-mail "${this.message}" não está cadastrado, envie seu e-mail de cadastro.`
                 }else if(userIsRegistered.type === 'mentor'){
+                    const result = await this.updateParticipant({
+                        discordName: this.discordName,
+                        discordUserId: this.discordUserId,
+                        type: 'mentor'
+                    }, userIsRegistered._id)
+
                     response = 'Mentor'
                 }else if(userIsRegistered.type === 'participant'){
                     const result = await this.updateParticipant({
@@ -293,7 +364,7 @@ export class Bot{
                         discordUserId: this.discordUserId,
                         type: 'participant'
                     }, userIsRegistered._id)
-                    console.log(result)
+
                     response = 'Participante'
                 }
             }

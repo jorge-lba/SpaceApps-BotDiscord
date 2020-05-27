@@ -28,15 +28,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.certifiedGenerator = void 0;
 // const Jimp = require( 'jimp' )
 const Jimp = __importStar(require("jimp"));
-function certifiedGenerator(userName = 'Name') {
+function CertifiedGenerator(userName = 'Name') {
     return __awaiter(this, void 0, void 0, function* () {
         const font = yield Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
         const certified = yield Jimp.read('./assets/img/certified.png');
         const areaPrint = yield Jimp.read('./assets/img/areaCertified.png');
         const areaWidthPrint = areaPrint.bitmap.width;
+        console.log(areaWidthPrint);
         areaPrint.print(font, 0, 28, {
             text: userName,
             alignmentX: yield Jimp.HORIZONTAL_ALIGN_CENTER,
@@ -45,4 +45,5 @@ function certifiedGenerator(userName = 'Name') {
         certified.write('./assets/certified/' + userName + '.png');
     });
 }
-exports.certifiedGenerator = certifiedGenerator;
+exports.default = CertifiedGenerator;
+// certifiedGenerator("jorge alegretti")

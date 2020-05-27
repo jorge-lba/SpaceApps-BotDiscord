@@ -52,17 +52,43 @@ class Participants {
             return userList;
         });
     }
+    updateParticiant(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const method = {
+                method: 'PUT',
+                body: JSON.stringify({
+                    cellPhone: user.cellPhone,
+                    discordName: user.discordName,
+                    discordUserId: user.discordUserId,
+                    team: user.team,
+                    type: user.type,
+                    mentoringSchedule: user.mentoringSchedule
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            };
+            let path;
+            if (user.type === 'participant') {
+                path = this.pathParticipants;
+            }
+            else {
+                path = this.pathMentors;
+            }
+            const response = yield fetch(this.url_server + path + '/' + id, method);
+            const resp = yield response.json();
+            return resp;
+        });
+    }
     validateEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             const participants = yield this.listParticipants();
             let testResult = participants.find((participant) => participant.email === email);
             if (testResult)
-                return 'participant';
+                return Object.assign(Object.assign({}, testResult), { type: 'participant' });
             const mentors = yield this.listMentors();
             testResult = mentors.find((mentor) => mentor.email === email);
             if (testResult)
-                return 'mentor';
-            return 'unregistered user';
+                return Object.assign(Object.assign({}, testResult), { type: 'mentor' });
+            return { error: 'unregistered user', type: 'unregistered user' };
         });
     }
     validateDiscordUser(id) {
@@ -75,7 +101,7 @@ class Participants {
             testResult = mentors.find((mentor) => mentor.discordUserId === id);
             if (testResult)
                 return Object.assign(Object.assign({}, testResult), { type: 'mentor' });
-            return { error: 'unregistered user' };
+            return { error: 'unregistered user', type: 'unregistered user' };
         });
     }
 }

@@ -42,16 +42,15 @@ class Participant {
         this.team = new team_1.Team(this.email, this._teamId, this.teamName);
         this.mentorings = new mentoring_1.Mentoring();
         this.createTeam = (nameTeam) => __awaiter(this, void 0, void 0, function* () { return yield this.team.create(nameTeam); });
-        this.addMemberMyTeam = (email) => __awaiter(this, void 0, void 0, function* () { return yield this.team.addMember(email, this.teamName); });
+        this.addMemberMyTeam = (email, team) => __awaiter(this, void 0, void 0, function* () { return yield this.team.addMember(email, team || this.teamName); });
         this.removeMemberMyTeam = (email) => __awaiter(this, void 0, void 0, function* () { return yield this.team.removeMember(email, this.teamName); });
-        this.addMentoringTeam = (mentoringId) => __awaiter(this, void 0, void 0, function* () { return yield this.team.addMentoring(mentoringId, this.teamName); });
+        this.addMentoringTeam = (mentoring) => __awaiter(this, void 0, void 0, function* () { return yield this.team.addMentoring(mentoring, this.teamName); });
         this.viewMyTeam = () => __awaiter(this, void 0, void 0, function* () { return yield this.team.selectOne(); });
         this.listAllMentorings = () => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listAll(); });
         this.listMentoringsByMentor = (name) => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listForMentor(name); });
         this.listMentoringByArea = (arae) => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listForArea(arae); });
         this.markMentoring = (item) => __awaiter(this, void 0, void 0, function* () {
             const marked = yield this.mentorings.mark(Object.assign(Object.assign({}, item), { team: this.teamName }));
-            console.log(marked);
             yield this.addMentoringTeam(marked.mentoring._id);
             return marked;
         });
@@ -59,6 +58,7 @@ class Participant {
             const response = yield this.viewMyTeam();
             return response.scheduledMentoring;
         });
+        console.log(teamName);
     }
     get teamId() { return this._teamId; }
 }

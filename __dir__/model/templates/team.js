@@ -30,6 +30,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Team = void 0;
 const dotenv = __importStar(require("dotenv"));
+const date_fns_1 = require("date-fns");
 const fetch = require('node-fetch');
 dotenv.config();
 class Team {
@@ -63,10 +64,23 @@ class Team {
             yield this.setTeam(this.teamName);
             const response = yield fetch(this.url_server + this.path + '/' + (this.teamId || teamId));
             const { message, team } = yield response.json();
-            return {
+            const mentorings = [];
+            for (const id of team.scheduledMentoring) {
+                const result = yield fetch(this.url_server + '/mentorings' + '/' + id);
+                const { message, mentoring } = yield result.json();
+                delete mentoring._id;
+                delete mentoring.createdAt;
+                delete mentoring.updatedAt;
+                delete mentoring.team;
+                delete mentoring.__v;
+                mentoring.date = date_fns_1.format(date_fns_1.parseISO(mentoring.date), "dd/MM/yyyy 'ás' HH:mm");
+                mentorings.push(mentoring);
+            }
+            team.scheduledMentoring = mentorings;
+            return ({
                 message,
                 team
-            };
+            });
         });
     }
     create(name) {
@@ -92,7 +106,10 @@ class Team {
     addMember(email = this._userEmail, name) {
         return __awaiter(this, void 0, void 0, function* () {
             const { message, teamList } = yield this.list();
-            const [team] = teamList.filter((item) => item.name === this.teamName || name);
+            const [team] = teamList.filter((item) => item.name === name);
+            const testMember = team.members.filter((item) => item === email);
+            if (testMember)
+                return { error: 'Usuário já cadastrado no time.' };
             team.members.push(email);
             const method = {
                 method: 'PUT',
@@ -107,7 +124,7 @@ class Team {
     removeMember(email = this._userEmail, name) {
         return __awaiter(this, void 0, void 0, function* () {
             const { message, teamList } = yield this.list();
-            const [team] = teamList.filter((item) => item.name === this.teamName || name);
+            const [team] = teamList.filter((item) => item.name === name);
             team.members = team.members.filter(item => item !== email);
             const method = {
                 method: 'PUT',
@@ -125,6 +142,7 @@ class Team {
             const [team] = teamList.filter((item) => item.name === teamName);
             console.log(team);
             team.scheduledMentoring.push(mentoring);
+            console.log(team.scheduledMentoring);
             const method = {
                 method: 'PUT',
                 body: JSON.stringify(team),

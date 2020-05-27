@@ -30,7 +30,8 @@ export class Participants {
                 discordName: user.discordName,
                 discordUserId: user.discordUserId,
                 team: user.team,
-                type: user.type
+                type: user.type,
+                mentoringSchedule: user.mentoringSchedule
             }),
             headers: {'Content-Type': 'application/json'}
         }
