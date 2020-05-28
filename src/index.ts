@@ -39,8 +39,6 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
 
 const bot = new Discord.Client( )
 
-bot.login( DISCORD_BOT_TOKEN )
-
 bot.on( 'ready', () => {
     console.log( 'Estou pronto para iniciar' )
 } )
@@ -90,6 +88,6 @@ bot.on( 'message', async (msg:any) => {
         
     }
 
-    
-
 } )
+
+bot.login( DISCORD_BOT_TOKEN )

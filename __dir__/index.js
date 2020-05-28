@@ -27,18 +27,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Discord = __importStar(require("discord.js"));
 const Bot_1 = require("./model/Bot");
-const express_1 = __importDefault(require("express"));
-const app = express_1.default();
-app.get('/', function (req, res) {
-    console.log(req.params);
-    res.json({ message: 'Bot SpaceApps' });
-});
 // const Discord = require( 'discord.js' )
 // const Certified = require( './certifiedGenerator' )
 const guildRoles = {
@@ -72,7 +63,6 @@ const guildChannel = {
 require('dotenv/config');
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const bot = new Discord.Client();
-bot.login(DISCORD_BOT_TOKEN);
 bot.on('ready', () => {
     console.log('Estou pronto para iniciar');
 });
@@ -111,6 +101,4 @@ bot.on('message', (msg) => __awaiter(void 0, void 0, void 0, function* () {
         // }
     }
 }));
-app.listen(process.env.PORT || 3000, function () {
-    console.log('App de Exemplo escutando na porta 3000!');
-});
+bot.login(DISCORD_BOT_TOKEN);
