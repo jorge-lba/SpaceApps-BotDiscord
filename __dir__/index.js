@@ -27,9 +27,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Discord = __importStar(require("discord.js"));
 const Bot_1 = require("./model/Bot");
+const express_1 = __importDefault(require("express"));
+const app = express_1.default();
+app.get('/', function (req, res) {
+    console.log(req.params);
+    res.json({ message: 'Bot SpaceApps' });
+});
 // const Discord = require( 'discord.js' )
 // const Certified = require( './certifiedGenerator' )
 const guildRoles = {
@@ -92,7 +101,6 @@ bot.on('message', (msg) => __awaiter(void 0, void 0, void 0, function* () {
             discordUserId
         }, message, msg);
         const response = yield userBot.run();
-        console.log(response);
         msg.reply(response || 'Error');
         // if( msg.content=== 'jorge@test.com' ){
         //     msg.reply( 'Seja bem-vindo!' )
@@ -103,3 +111,6 @@ bot.on('message', (msg) => __awaiter(void 0, void 0, void 0, function* () {
         // }
     }
 }));
+app.listen(process.env.PORT || 3000, function () {
+    console.log('App de Exemplo escutando na porta 3000!');
+});
