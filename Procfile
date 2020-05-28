@@ -1,1 +1,1 @@
-worker: yarn start
+worker: node __dir__/index.js
