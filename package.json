@@ -14,10 +14,12 @@
     "date-fns-tz": "^1.0.10",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "jimp": "^0.10.3",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.6",
     "@types/dotenv": "^8.2.0",
     "@types/node": "^14.0.4",
     "@types/node-fetch": "^2.5.7",

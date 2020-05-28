@@ -1,6 +1,13 @@
 import * as Discord from 'discord.js'
 import { Bot } from './model/Bot'
+import express, {Request, Response} from 'express'
 
+const app = express()
+app.get('/', function(req:Request, res:Response) {
+    console.log(req.params)
+    res.json({message: 'Bot SpaceApps'});
+});
+  
 // const Discord = require( 'discord.js' )
 // const Certified = require( './certifiedGenerator' )
 
@@ -76,7 +83,6 @@ bot.on( 'message', async (msg:any) => {
         }, message, msg)
 
         const response = await userBot.run()
-        console.log(response)
         
         msg.reply( response || 'Error' )
 
@@ -94,3 +100,7 @@ bot.on( 'message', async (msg:any) => {
     
 
 } )
+
+app.listen( process.env.PORT || 3000, function() {
+    console.log('App de Exemplo escutando na porta 3000!');
+});
