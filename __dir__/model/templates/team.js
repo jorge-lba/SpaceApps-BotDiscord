@@ -140,9 +140,7 @@ class Team {
         return __awaiter(this, void 0, void 0, function* () {
             const { message, teamList } = yield this.list();
             const [team] = teamList.filter((item) => item.name === teamName);
-            console.log(team);
             team.scheduledMentoring.push(mentoring);
-            console.log(team.scheduledMentoring);
             const method = {
                 method: 'PUT',
                 body: JSON.stringify(team),
@@ -159,12 +157,12 @@ exports.Team = Team;
 // async function run(){
 //     // const teamCreate = await team.create('SpaceApps')
 //     // const login = await team.addMember('Space')
-//     // console.log(login)
+// .log(login)
 //     // const leave = await team.removeMember('Space', 'v1fd86v41d65g4wsvf1dxc6v5d4g')
-//     // console.log(leave)
+// .log(leave)
 //     // const list = await team.selectOne()
-//     // console.log(list)
+// .log(list)
 //     // const mentoring = await team.addMentoring('Space','v1fd86v41d65g4wsvf1dxc6v5d4g')
-//     // console.log(mentoring)
+// .log(mentoring)
 // }
 // run()

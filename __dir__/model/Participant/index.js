@@ -46,11 +46,11 @@ class Participant {
         this.removeMemberMyTeam = (email) => __awaiter(this, void 0, void 0, function* () { return yield this.team.removeMember(email, this.teamName); });
         this.addMentoringTeam = (mentoring) => __awaiter(this, void 0, void 0, function* () { return yield this.team.addMentoring(mentoring, this.teamName); });
         this.viewMyTeam = () => __awaiter(this, void 0, void 0, function* () { return yield this.team.selectOne(); });
-        this.listAllMentorings = () => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listAll(); });
+        this.listAllMentorings = () => __awaiter(this, void 0, void 0, function* () { return this.mentorings.sheetListAll(); });
         this.listMentoringsByMentor = (name) => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listForMentor(name); });
         this.listMentoringByArea = (arae) => __awaiter(this, void 0, void 0, function* () { return this.mentorings.listForArea(arae); });
-        this.markMentoring = (item) => __awaiter(this, void 0, void 0, function* () {
-            const marked = yield this.mentorings.mark(Object.assign(Object.assign({}, item), { team: this.teamName }));
+        this.markMentoring = (item, id, name) => __awaiter(this, void 0, void 0, function* () {
+            const marked = yield this.mentorings.sheetMark(Object.assign(Object.assign({}, item), { team: this.teamName }), id, name);
             yield this.addMentoringTeam(marked.mentoring._id);
             return marked;
         });
