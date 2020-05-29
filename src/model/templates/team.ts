@@ -3,7 +3,6 @@ import {parseISO, format} from 'date-fns'
 const fetch = require('node-fetch')
 
 dotenv.config()
-
 export class Team {
     private url_server:string = String(process.env.URL_SERVER_DATABASE)
     private path:string = '/teams'
@@ -130,10 +129,8 @@ export class Team {
     public async addMentoring(mentoring:any, teamName:string):Promise<object>{
         const {message, teamList} = await this.list()
         const [team] = teamList.filter((item:any) => item.name === teamName)
-        console.log(team)
 
         team.scheduledMentoring.push(mentoring)
-        console.log(team.scheduledMentoring)
 
         const method:object = {
             method:'PUT',
@@ -158,16 +155,16 @@ export class Team {
 //     // const teamCreate = await team.create('SpaceApps')
 
 //     // const login = await team.addMember('Space')
-//     // console.log(login)
+// .log(login)
     
 //     // const leave = await team.removeMember('Space', 'v1fd86v41d65g4wsvf1dxc6v5d4g')
-//     // console.log(leave)
+// .log(leave)
 
 //     // const list = await team.selectOne()
-//     // console.log(list)
+// .log(list)
 
 //     // const mentoring = await team.addMentoring('Space','v1fd86v41d65g4wsvf1dxc6v5d4g')
-//     // console.log(mentoring)
+// .log(mentoring)
 
 // }
 // run()

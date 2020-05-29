@@ -26,11 +26,11 @@ export class Participant {
     public addMentoringTeam = async (mentoring:any):Promise<object> => await this.team.addMentoring(mentoring, this.teamName)
     public viewMyTeam = async ():Promise<object> => await this.team.selectOne()
 
-    public listAllMentorings = async () => this.mentorings.listAll()
+    public listAllMentorings:any = async () => this.mentorings.sheetListAll()
     public listMentoringsByMentor = async (name:string) => this.mentorings.listForMentor(name)
     public listMentoringByArea = async (arae:string) => this.mentorings.listForArea(arae)
-    public markMentoring = async (item:TypeMarkMentoring) => {
-        const marked = await this.mentorings.mark({...item, team:this.teamName})
+    public markMentoring = async (item:TypeMarkMentoring, id:number, name:string) => {
+        const marked = await this.mentorings.sheetMark({...item, team:this.teamName},id, name)
         await this.addMentoringTeam(marked.mentoring._id)
         return marked
     }

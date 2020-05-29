@@ -2,3 +2,4 @@ node_modules/
 assets/certified/
 assets/img/
 .env
+credentials.json

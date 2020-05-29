@@ -1,4 +1,7 @@
 import * as dotenv from 'dotenv'
+import {ArrayToGoogleSheets, IUpdateOptions} from "array-to-google-sheets"; 
+import { Sheet } from "array-to-google-sheets/build/Sheet"; 
+
 const fetch = require('node-fetch')
 
 dotenv.config()
@@ -97,21 +100,89 @@ export class Mentoring{
 
     }
 
+    public async sheetListAll():Promise<{listAll:[], sheet:Sheet }>{
+        const googleSheets = new ArrayToGoogleSheets({keyFilename: "./credentials.json"});
+        const spreadsheet = await googleSheets.getSpreadsheet(String(process.env.SHEET_ID));
+        const sheet:any = await spreadsheet.findSheet("mentorias")
+        const values = await sheet.getValues()
+
+        const listAll =  values.filter( (mentoring:any) => ({
+            mentoringId:  mentoring[0],
+            mentorName: mentoring[1],
+            mentorEmail:  mentoring[2],
+            area: mentoring[3],
+            date: mentoring[4],
+            hous:mentoring[5],
+            state:mentoring[6]
+        }))
+
+        const list = listAll.filter((mentoring:any) => mentoring[6] === 'open')
+
+        return {
+            listAll:list,
+            sheet
+        }
+    }
+
+    public async sheetListByArea(area:string){
+        const {listAll, sheet} = await this.sheetListAll()
+        const list =  listAll.filter((mentoring:any) => mentoring[3] === area)
+        return list
+    }
+
+    public async sheetListByMentor(name:string){
+        const {listAll, sheet} = await this.sheetListAll()
+        const list =  listAll.filter((mentoring:any) => mentoring[1] === name)
+        return list
+    }
+
+    public async sheetListById(id:number){
+        const {listAll, sheet} = await this.sheetListAll()
+        const list =  listAll.find((mentoring:any) => mentoring[0] === id)
+        return list
+    }
+
+    public async sheetMark(item:TypeMarkMentoring, id:number, name:string){
+        const {listAll, sheet} = await this.sheetListAll()
+        const method:object = {
+            method:'POST',
+            body: JSON.stringify(item),
+            headers: {'Content-Type': 'application/json'}
+        }
+        
+        const response = await fetch(this.url_server +'/mentorings', method)
+        const marked = await response.json()
+
+        sheet.updateCell(id,6,'marked')
+        sheet.updateCell(id,7,item.team)
+        sheet.updateCell(id,8,name)
+
+
+        const mentoring:any = await listAll.find((mentoring:any) => mentoring[0] === id)
+        if(mentoring){
+            mentoring[2] = 'marked'
+            return marked
+        }else{
+            return marked
+        }
+    }
+
 }
 
 // const mentoring = new Mentoring()
 
 // async function run(){
-//    const list =  await mentoring.listAll()
-//    const listForArea:any = await mentoring.listForArea('UX')
-//    const listForMentor:any = await mentoring.listForMentor('Jorge')
-//    const marked = await mentoring.mark({
-//         mentor:'jorge@testUpdate.com', 
-//         team:'5ec724d4ab3cff35a4b6513c', 
-//         area:'Buss', 
-//         date: new Date('2020-05-30')
-//    })
-//    console.log(marked)
+// //    const list =  await mentoring.listAll()
+// //    const listForArea:any = await mentoring.listForArea('UX')
+// //    const listForMentor:any = await mentoring.listForMentor('Jorge')
+// //    const marked = await mentoring.mark({
+// //         mentor:'jorge@testUpdate.com', 
+// //         team:'5ec724d4ab3cff35a4b6513c', 
+// //         area:'Buss', 
+// //         date: new Date('2020-05-30')
+// //    })
+//     const list = await mentoring.sheetListById(11)
+//    console.log(list)
 // }
 
 // run()

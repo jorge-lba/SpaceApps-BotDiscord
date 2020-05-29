@@ -1,5 +1,5 @@
 import { Participants } from "../templates/participants";
-import { Mentoring } from "../templates/mentoring";
+import { Mentoring, TypeMarkMentoring } from "../templates/mentoring";
 import { Participant } from "../Participant";
 import CertifiedGenerator from '../../certifiedGenerator'
 
@@ -176,17 +176,22 @@ export class Bot{
     }
     
     public async listMentoringAll(){
-        const mentorings = await this.mentorings.listAll()
+        const items:any = await this.mentorings.sheetListAll()
+        const {listAll:mentorings, sheet} = items
         let response:string =''
         
-        mentorings.forEach((mentoring:any) => {
-            mentoring.dates.forEach((date:any) => {
-                const dateformat = parseISO(date.date)
-                const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
+        // mentorings.forEach((mentoring:any) => {
+        //     mentoring.dates.forEach((date:any) => {
+        //         const dateformat = parseISO(date.date)
+        //         const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
 
-                if(date.state === 'Open')
-                    response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
-            })
+        //         if(date.state === 'Open')
+        //             response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
+        //     })
+        // })
+
+        mentorings.forEach((mentoring:any) => {
+            response+=`\n#${mentoring[0]} - ${mentoring[1]} - ${mentoring[3]} - ${mentoring[4]} ás ${mentoring[5]} - ${mentoring[6]}`  
         })
 
         return response
@@ -194,78 +199,116 @@ export class Bot{
 
 
     public async listMentoringByMentor(mentorName:string){
-        const mentorings = await this.mentorings.listForMentor(mentorName)
+        const items:any = await this.mentorings.sheetListByMentor(mentorName)
+        const [...mentorings] = items
         let response:string = ''
 
-        mentorings.forEach((mentoring:any) => {
-            mentoring.dates.forEach((date:any) => {
-                const dateformat = parseISO(date.date)
-                const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
+        // mentorings.forEach((mentoring:any) => {
+        //     mentoring.dates.forEach((date:any) => {
+        //         const dateformat = parseISO(date.date)
+        //         const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
 
-                if(date.state === 'Open')
-                    response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
-            })
+        //         if(date.state === 'Open')
+        //             response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
+        //     })
+        // })
+        if(!mentorings[0])return `Nenhuma mentoria encontrada do mentor ${mentorName}`
+        mentorings.forEach((mentoring:any) => {
+            response+=`\n#${mentoring[0]} - ${mentoring[1]} - ${mentoring[3]} - ${mentoring[4]} ás ${mentoring[5]} - ${mentoring[6]}`  
         })
+
 
         return response
     }
 
     public async listMentoringByArea(area:string){
-        const mentorings = await this.mentorings.listForArea(area)
+        const items:any = await this.mentorings.sheetListByArea(area)
+        const [...mentorings] = items
         let response:string =''
         
+        // mentorings.forEach((mentoring:any) => {
+        //     mentoring.dates.forEach((date:any) => {
+        //         const dateformat = parseISO(date.date)
+        //         const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
+
+        //         if(date.state === 'Open')
+        //             response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
+        //     })
+        // })
+        if(!mentorings[0])return `Nenhuma mentoria encontrada na area de ${area}`
+
         mentorings.forEach((mentoring:any) => {
-            mentoring.dates.forEach((date:any) => {
-                const dateformat = parseISO(date.date)
-                const dataFormated = format(zonedTimeToUtc(dateformat, 'America/Sao_Paulo'), "dd/MM/yyyy 'ás' HH:mm")
-
-                if(date.state === 'Open')
-                    response+=`\n${mentoring.mentorName} - ${mentoring.area} - ${dataFormated} - ${date.state}`
-            })
+            response+=`\n#${mentoring[0]} - ${mentoring[1]} - ${mentoring[3]} - ${mentoring[4]} ás ${mentoring[5]} - ${mentoring[6]}`  
         })
-
         return response
     }
 
-    public async markMentoring(user:any, mentoring:string){
-        const [mentorName, area, dateHours, state] = mentoring.replace(/ /gm,'').split('-')
-        if(state !== 'Open')return 'Mentoria não está disponivel.'
+    // public async markMentoring(user:any, mentoring:string){
+    //     const [mentorName, area, dateHours, state] = mentoring.replace(/ /gm,'').split('-')
+    //     if(state !== 'Open')return 'Mentoria não está disponivel.'
 
-        const [date, hours] = dateHours.replace('ás', 'as').split('as')
-        const [hour, minute] = hours.split(':')
-        const [day, month, year] = date.split('/')
+    //     const [date, hours] = dateHours.replace('ás', 'as').split('as')
+    //     const [hour, minute] = hours.split(':')
+    //     const [day, month, year] = date.split('/')
 
-        const dateNew = parseISO(`${year}-${month}-${day} ${hours}`)
-        const dateEnd = subHours(dateNew,3) //subHours(dateNew, 3)
+    //     const dateNew = parseISO(`${year}-${month}-${day} ${hours}`)
+    //     const dateEnd = subHours(dateNew,3) //subHours(dateNew, 3)
 
-        let response:string = ''
-        let mentoringObj:any = {}
-        const mentors = await this.participants.listMentors()
-        const mentorByName = mentors.find((mentor:any) => mentor.name === mentorName)
-        console.log(mentorByName)
-        mentorByName.mentoringSchedule.forEach((mentorings:any, i:any) => {
-            if(mentorings.area === area){
-                mentorings.dates.forEach((date:any,index:any) => {
-                    if(new Date(date.date).getTime() === dateNew.getTime() && date.state === 'Open'){
-                        mentoringObj = {
-                            mentor: mentorByName.name,
-                            area: mentorings.area,
-                            ...date
-                        }
-                        mentorByName.mentoringSchedule[i].dates[index].state = 'marked'
-                        response = 'Mentoria marcada com sucesso!'
-                    }
-                })
-            }
-        })
+    //     let response:string = ''
+    //     let mentoringObj:any = {}
+    //     const mentors = await this.participants.listMentors()
+    //     const mentorByName = mentors.find((mentor:any) => mentor.name === mentorName)
+    //     console.log(mentorByName)
+    //     mentorByName.mentoringSchedule.forEach((mentorings:any, i:any) => {
+    //         if(mentorings.area === area){
+    //             mentorings.dates.forEach((date:any,index:any) => {
+    //                 if(new Date(date.date).getTime() === dateNew.getTime() && date.state === 'Open'){
+    //                     mentoringObj = {
+    //                         mentor: mentorByName.name,
+    //                         area: mentorings.area,
+    //                         ...date
+    //                     }
+    //                     mentorByName.mentoringSchedule[i].dates[index].state = 'marked'
+    //                     response = 'Mentoria marcada com sucesso!'
+    //                 }
+    //             })
+    //         }
+    //     })
 
-        await this.participants.updateParticiant({mentoringSchedule:mentorByName.mentoringSchedule}, mentorByName._id)
+    //     await this.participants.updateParticiant({mentoringSchedule:mentorByName.mentoringSchedule}, mentorByName._id)
 
-        if(response !== 'Mentoria marcada com sucesso!')return 'Não foi possivel marcar essa mentoria, tente novamente.'
+    //     if(response !== 'Mentoria marcada com sucesso!')return 'Não foi possivel marcar essa mentoria, tente novamente.'
         
+    //     const participant = new Participant(user.name, user.email, user.team) 
+    
+    //     await participant.markMentoring(mentoringObj)
+
+    //     return response
+    // }
+
+    public async markMentoring(user:any, mentoring:string){
+        const id = parseInt(mentoring.replace(/ /gm,'').replace('#',''))
+        
+        let response:string = ''
+   
+        const item:any = await this.mentorings.sheetListById(id)
+
+        if(item){ response = 'Mentoria marcada com sucesso!'}
+        else{ return 'Não foi possivel marcar essa mentoria, tente novamente.'}
+
+        const [day, month, year] = item[4].split('/')
+        
+        const mentoringObj:TypeMarkMentoring = {
+            area: item[3],
+            date: new Date(`${year}-${month}-${day} ${item[5]}`),
+            mentor: item[1],
+            team:user.team,
+            mentorEmail:item[2],
+        }
+
         const participant = new Participant(user.name, user.email, user.team) 
     
-        await participant.markMentoring(mentoringObj)
+        await participant.markMentoring(mentoringObj,id,user.name)
 
         return response
     }
@@ -319,7 +362,6 @@ export class Bot{
                 case this.options.certified.comand:
                     await CertifiedGenerator( user.name )
                     this.member.reply('test', { files: ['./assets/certified/' + user.name + '.png'] })
-                    console.log( message )
                     response = this.options.certified.response
                 break
                 default:
@@ -337,7 +379,6 @@ export class Bot{
                 case this.options.certified.comand:
                     await CertifiedGenerator( user.name )
                     this.member.reply('test', { files: ['./assets/certified/' + user.name + '.png'] })
-                    console.log( message )
                     response = this.options.certified.response
                 break
                 default:
@@ -394,7 +435,7 @@ export class Bot{
 //         discordUserId:33, 
 //         discordName:'Addae', 
 //     }, //'time')
-//     'marcar mentoria: Jorge - Pitch - 29/05/2020 ás 20:00 - Open')
+//     'marcar mentoria: #11')
 
 //     const response = await bot.run()
 
