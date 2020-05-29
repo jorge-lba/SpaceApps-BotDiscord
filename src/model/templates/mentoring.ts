@@ -101,7 +101,8 @@ export class Mentoring{
     }
 
     public async sheetListAll():Promise<{listAll:[], sheet:Sheet }>{
-        const googleSheets = new ArrayToGoogleSheets({keyFilename: "./credentials.json"});
+        console.log(__dirname)
+        const googleSheets = new ArrayToGoogleSheets({keyFilename: "./assets/credentials.json"});
         const spreadsheet = await googleSheets.getSpreadsheet(String(process.env.SHEET_ID));
         const sheet:any = await spreadsheet.findSheet("mentorias")
         const values = await sheet.getValues()
