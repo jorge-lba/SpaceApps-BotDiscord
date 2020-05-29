@@ -101,10 +101,10 @@ export class Mentoring{
     }
 
     public async sheetListAll():Promise<{listAll:[], sheet:Sheet }>{
-        console.log(process.env.GOOGLE_SHEET_EMAIL)
-        console.log(process.env.GOOGLE_SHEET_KEY)
+        const key = String(process.env.GOOGLE_SHEET_KEY).replace( /\\n/g, '\n')
 
-        const googleSheets = new ArrayToGoogleSheets({credentials: {client_email: process.env.GOOGLE_SHEET_EMAIL, private_key: process.env.GOOGLE_SHEET_KEY}});
+
+        const googleSheets = new ArrayToGoogleSheets({credentials: {client_email: process.env.GOOGLE_SHEET_EMAIL, private_key: key}});
         const spreadsheet = await googleSheets.getSpreadsheet(String(process.env.SHEET_ID));
         const sheet:any = await spreadsheet.findSheet("mentorias")
         const values = await sheet.getValues()
