@@ -96,7 +96,7 @@ class Mentoring {
     sheetListAll() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(__dirname);
-            const googleSheets = new array_to_google_sheets_1.ArrayToGoogleSheets({ keyFilename: "./assets/credentials.json" });
+            const googleSheets = new array_to_google_sheets_1.ArrayToGoogleSheets({ keyFilename: __dirname + "/credentials.json" });
             const spreadsheet = yield googleSheets.getSpreadsheet(String(process.env.SHEET_ID));
             const sheet = yield spreadsheet.findSheet("mentorias");
             const values = yield sheet.getValues();
